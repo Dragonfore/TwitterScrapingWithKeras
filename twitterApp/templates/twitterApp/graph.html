@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+
+  <head>
+    <!-- Stylesheet and meta necessary for Bootstrap -->
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+
+    <!-- Google fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+    <script src="https://d3js.org/d3-path.v1.min.js" charset="utf-8"></script>
+    <script src="{% static 'radarChart.js' %}" charset="utf-8"></script>
+    <script>
+    
+    
+    const plot = (data1,svg) => {
+      var data_list = [];
+      for (var dat of data1){
+        let current_dat = dat.innerHTML;
+        if (current_dat){
+          data_list.push(current_dat);
+        }
+      }
+      var newData = [
+				{ name: 'Allocated budget',
+					axes: [
+						{axis: 'Sales', value: data_list[2]},
+						{axis: 'Marketing', value: data_list[3]},
+						{axis: 'Development', value: data_list[4]},
+						{axis: 'Customer Support', value: data_list[5]},
+						{axis: 'Information Technology', value: data_list[6]},
+						{axis: 'Administration', value: data_list[7]}
+					]
+				},
+				{ name: 'Actual Spending',
+					axes: [
+						{axis: 'Sales', value: 50},
+						{axis: 'Marketing', value: 45},
+						{axis: 'Development', value: 20},
+						{axis: 'Customer Support', value: 20},
+						{axis: 'Information Technology', value: 25},
+						{axis: 'Administration', value: 23}
+					]
+				}
+			];
+      
+      RadarChart('.radarChart', newData, radarChartOptions)
+    }
+
+    function plotProcessedResults(results){
+      var data_list = [];
+      var newData = {};
+      newData.axes = [];
+      newData.name = "Results for your query";
+      var my_results = JSON.parse(results)
+      for (let key of Object.keys(my_results)){
+        newData.axes.push({axis: key, value: parseFloat(my_results[key])})
+      }
+      data_list.push(newData)
+      RadarChart('.radarChart', data_list, radarChartOptions)
+    }
+
+    function processText(text){
+      function requestListener() {
+        var results = this.responseText;
+        plotProcessedResults(results, null)
+      }
+      var oReq = new XMLHttpRequest();
+      oReq.addEventListener('load', requestListener);
+      oReq.queryParameter = 'realdonaldtrump';
+      oReq.queryParameterType = 'username';
+      oReq.open('GET', 'static/bestClassifier.json/');
+      oReq.setRequestHeader('queryData', 'realdonaldtrump')
+      oReq.setRequestHeader('queryDataType', 'username')
+      oReq.send()
+    }
+    </script>
+    <style>
+        .legend {
+            font-family: 'Raleway', sans-serif;
+            fill: #333333;
+        }
+    </style>
+    <title>Anaconda!</title>
+
+  </head>
+
+  <body>
+
+    <table class="table table-dark table-hover">
+      <thead>
+        <tr>
+        {% for c in cs %}
+          <td>{{ c }}</td>
+        {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rs %}
+        <tr onclick="plot(this.childNodes, d3.select('.radarChart'))">
+          <td>{{ r.name }}</td>
+          <td>{{ r.date }}</td>
+          <td>{{ r.ym }}</td>
+          <td>{{ r.homogeneity }}</td>
+          <td>{{ r.plowing }}</td>
+          <td>{{ r.biological }}</td>
+          <td>{{ r.chemical }}</td>
+          <td>{{ r.hardness }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+   <div class="radarChart" style="display: inline-flex;"></div>
+   <form action='#' onsubmit="return false">
+     Target Query:<br/>
+     <input type='text' name='queryParameter'><br/>
+     <input type='radio' name='typeOfQuery' value='username'>Username<br/>
+     <input type='radio' name='typeOfQuery' value='hashtag'>Hashtag<br/>
+     <input type='radio' name='typeOfQuery' value='recent'>Recent<br/>
+     <input type='radio' name='typeOfQuery' value='popular'>Popular<br/>
+     <input type='submit' value='Submit' onclick="processText('Something important');">
+   </form>
+    <script>
+        //////////////////////////////////////////////////////////////
+        //////////////////////// Set-Up //////////////////////////////
+        //////////////////////////////////////////////////////////////
+        var margin = { top: 50, right: 80, bottom: 50, left: 80 },
+        width = Math.min(700, window.innerWidth / 4) - margin.left - margin.right,
+        height = Math.min(width, window.innerHeight - margin.top - margin.bottom);
+
+        //////////////////////////////////////////////////////////////
+        ////////////////////////// Data //////////////////////////////
+        //////////////////////////////////////////////////////////////
+        var data = [
+        { name: 'Mean',
+            axes: [
+            {axis: 'homogeneity', value: 40},
+            {axis: 'plowing', value: 40},
+            {axis: 'biological', value: 40},
+            {axis: 'chemical', value: 40},
+            {axis: 'hardness', value: 40}
+            ]
+        },
+        { name: 'You',
+            axes: [
+            {axis: 'homogeneity', value: 10},
+            {axis: 'chemical', value: 1000},
+            {axis: 'hardness', value: 70},
+            {axis: 'biological', value: 50},
+            {axis: 'plowing', value: 40},
+            ]
+        }
+        ];
+
+        // Djangoからの代入
+        data[1].axes[0].value = parseFloat("{% for r in rs %}{{ r.homogeneity }}{% endfor %}");
+        data[1].axes[1].value = parseFloat("{% for r in rs %}{{ r.plowing }}{% endfor %}");
+        data[1].axes[2].value = parseFloat("{% for r in rs %}{{ r.biological }}{% endfor %}");
+        data[1].axes[3].value = parseFloat("{% for r in rs %}{{ r.chemical }}{% endfor %}");
+        data[1].axes[4].value = parseFloat("{% for r in rs %}{{ r.hardness }}{% endfor %}");
+
+        var radarChartOptions = {
+          w: 290,
+          h: 350,
+          margin: margin,
+          maxValue: 60,
+          levels: 6,
+          roundStrokes: false,
+          color: d3.scaleOrdinal().range(["#AFC52F", "#ff6600"]),
+        format: '.0f',
+        legend: { title: 'TOTAL EVALUATION', translateX :  100 ,  translateY :  40  } 
+        }; 
+        RadarChart ( ".radarChart" ,  data ,  radarChartOptions );
+
+    </script>
+    <!-- jQuery necessary for Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+  </body>
+</html>
