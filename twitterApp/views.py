@@ -8,6 +8,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# The midpoint value of the classifier which has the highest success rate
+CLASSIFIER_MEDIAN_VALUE = 11.76
+
 class IndexView(gen.ListView):
     template_name = 'twitterApp/index.html'
     context_object_name = 'latest_question_list'
@@ -60,7 +63,7 @@ def send_classifier_data(request):
     # request.META.get("HTTP_QUERYDATATYPE")
     currentQueryData = request.META.get("HTTP_QUERYDATA")
     currentQueryType = request.META.get("HTTP_QUERYDATATYPE")
-    logger.error(analyze_twitter_query(None))
+    return HttpResponse(json.dumps(analyze_twitter_query(request)))
     if currentQueryData == 'realdonaldtrump' and currentQueryType == 'username':
         processed_data = {'male': 164, 'positive': 45, 'female': 180, 'negative': 119}
     else:
@@ -68,10 +71,22 @@ def send_classifier_data(request):
     return HttpResponse(json.dumps(processed_data)) 
 
 def determine_gender(text_list):
+    from nltk.tokenize import word_tokenize
+    import json
+
+    def scoreText(classifierObject, text):
+        score = 0.0
+        for token in word_tokenize(text):
+            if token in classifierObject:
+                score += classifierObject[token]
+        return score - CLASSIFIER_MEDIAN_VALUE
     with open('static/bestClassifier.json') as file:
         try:
-            g_classifier = file.read()
-            return g_classifier
+            text_classifications = []
+            g_classifier = json.load(file)
+            for text in text_list:
+                text_classifications.append({'compound': scoreText(g_classifier, text['text'])})
+            return text_classifications
         except Exception as ex:
             raise FileNotFoundError('Unable to load Classifier' + str(ex)) 
 
@@ -80,7 +95,7 @@ def determine_sentiment(text_list):
     sentiment_list = []
     SIA = SentimentIntensityAnalyzer()
     for text in text_list:
-        sentiment_list.append(SIA.polarity_scores(text))
+        sentiment_list.append(SIA.polarity_scores(text['text']))
     return sentiment_list
 
 def pull_twitter_data(queryData, queryDataType):
@@ -91,4 +106,34 @@ def pull_twitter_data(queryData, queryDataType):
     return test_json_object
 
 def analyze_twitter_query(request):
-   return [str(determine_gender(["Something", "Something Else"])), str(determine_sentiment(['I hate', 'I love', 'I am neutral'])), str(pull_twitter_data(None, None))] 
+    # Pull Twitter Data
+    currentQueryData = request.META.get("HTTP_QUERYDATA")
+    currentQueryType = request.META.get("HTTP_QUERYDATATYPE")
+    tw_data = pull_twitter_data(currentQueryData, currentQueryType)
+
+    # Parse for tweets or other necessary information into an object (or lists in the case of sentiment and gender)
+    tweets = []
+    for tweet in tw_data:
+        # Do something
+        tweets.append(tweet)
+
+    # Run the two above processing information using these lists
+    sentiment_list = determine_sentiment(tweets)
+    gender_list = determine_gender(tweets)
+
+    # Return the data for visualization as an object
+    positive_entries = 0
+    negative_entries = 0
+    male_entries = 0
+    female_entries = 0
+    for item in sentiment_list:
+        if item['compound'] >= 0:
+            positive_entries += 1
+        else:
+            negative_entries += 1
+    for item in gender_list:
+        if item['compound'] >= 0:
+            male_entries += 1
+        else:
+            female_entries += 1
+    return {'male': 10* male_entries, 'positive': 10* positive_entries, 'female': 10* female_entries, 'negative': 10* negative_entries}
