@@ -1,6 +1,12 @@
 ENV/*
 ENV/*/*
 ENV/*/*/*
+
+.mypy_cache/*
+.mypy_cache/*/*
+.mypy_cache/*/*/*
+.mypy_cache/*/*/*/*
+
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
