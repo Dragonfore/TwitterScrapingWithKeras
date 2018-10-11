@@ -15,12 +15,10 @@ class Question(models.Model):
 class evaluation(models.Model):
     name = models.CharField(max_length=100)
     date = models.DateField()
-    ym = models.FloatField(max_length=10)
-    homogeneity = models.FloatField(max_length=10)
-    plowing = models.FloatField(max_length=10)
-    biological = models.FloatField(max_length=10)
-    chemical = models.FloatField(max_length=10)
-    hardness = models.FloatField(max_length=10)
+    male_entries = models.FloatField(max_length=100)
+    female_entries = models.FloatField(max_length=100)
+    positive_entries = models.FloatField(max_length=100)
+    negative_entries = models.FloatField(max_length=100)
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)

@@ -28,24 +28,20 @@
         }
       }
       var newData = [
-				{ name: 'Allocated budget',
+				{ name: 'Your entry',
 					axes: [
-						{axis: 'Sales', value: data_list[2]},
-						{axis: 'Marketing', value: data_list[3]},
-						{axis: 'Development', value: data_list[4]},
-						{axis: 'Customer Support', value: data_list[5]},
-						{axis: 'Information Technology', value: data_list[6]},
-						{axis: 'Administration', value: data_list[7]}
+						{axis: 'male_entries', value: data_list[2]},
+						{axis: 'positive_entries', value: data_list[4]},
+						{axis: 'female_entries', value: data_list[3]},
+						{axis: 'negative_entries', value: data_list[5]}
 					]
 				},
-				{ name: 'Actual Spending',
+				{ name: 'Average entry',
 					axes: [
 						{axis: 'Sales', value: 50},
 						{axis: 'Marketing', value: 45},
 						{axis: 'Development', value: 20},
 						{axis: 'Customer Support', value: 20},
-						{axis: 'Information Technology', value: 25},
-						{axis: 'Administration', value: 23}
 					]
 				}
 			];
@@ -106,12 +102,10 @@
         <tr onclick="plot(this.childNodes, d3.select('.radarChart'))">
           <td>{{ r.name }}</td>
           <td>{{ r.date }}</td>
-          <td>{{ r.ym }}</td>
-          <td>{{ r.homogeneity }}</td>
-          <td>{{ r.plowing }}</td>
-          <td>{{ r.biological }}</td>
-          <td>{{ r.chemical }}</td>
-          <td>{{ r.hardness }}</td>
+          <td>{{ r.male_entries }}</td>
+          <td>{{ r.female_entries }}</td>
+          <td>{{ r.positive_entries }}</td>
+          <td>{{ r.negative_entries }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -160,11 +154,10 @@
         ];
 
         // Djangoからの代入
-        data[1].axes[0].value = parseFloat("{% for r in rs %}{{ r.homogeneity }}{% endfor %}");
-        data[1].axes[1].value = parseFloat("{% for r in rs %}{{ r.plowing }}{% endfor %}");
-        data[1].axes[2].value = parseFloat("{% for r in rs %}{{ r.biological }}{% endfor %}");
-        data[1].axes[3].value = parseFloat("{% for r in rs %}{{ r.chemical }}{% endfor %}");
-        data[1].axes[4].value = parseFloat("{% for r in rs %}{{ r.hardness }}{% endfor %}");
+        data[1].axes[0].value = parseFloat("{% for r in rs %}{{ r.male_entries }}{% endfor %}");
+        data[1].axes[1].value = parseFloat("{% for r in rs %}{{ r.positive_entries }}{% endfor %}");
+        data[1].axes[2].value = parseFloat("{% for r in rs %}{{ r.female_entries }}{% endfor %}");
+        data[1].axes[3].value = parseFloat("{% for r in rs %}{{ r.negative_entries }}{% endfor %}");
 
         var radarChartOptions = {
           w: 290,

@@ -51,7 +51,7 @@ def vote(request, question_id):
 
 def index(request):
     #SELECT
-    qry = evaluation.objects.order_by('-ym')[0:].values('name', 'date','ym','homogeneity','plowing','biological','chemical','hardness')
+    qry = evaluation.objects.order_by('-date')[0:].values('name', 'date','male_entries','female_entries','positive_entries','negative_entries')
     return render(request, 'twitterApp/graph.html', {'rs': qry, 'cs':qry[0].keys()})
 
 def send_classifier_data(request):
@@ -115,6 +115,9 @@ def analyze_twitter_query(request):
     tweets = []
     for tweet in tw_data:
         # Do something
+        if currentQueryData == 'realdonaldtrump':
+            if len(tweets) >= 10:
+                break
         tweets.append(tweet)
 
     # Run the two above processing information using these lists
